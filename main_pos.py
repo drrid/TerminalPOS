@@ -11,7 +11,7 @@ from dateutil import parser
 import os
 from textual.worker import Worker, get_current_worker
 from escpos.printer import Network
-import requests
+import socketio
 
 
 # Pos Screen --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -42,7 +42,10 @@ class Pos(Screen):
         PT_CLMN = [['ID', 3], ['Textile Name', 13], ['price', 13], ['quantity', 12], ['quantity left', 10]]
         for c in PT_CLMN:
             self.textile_widget.add_column(f'{c[0]}', width=c[1])
-        requests.post('http://127.0.0.1:5555/clear')
+
+        self.sio = socketio.Client()
+        self.sio.connect('http://127.0.0.1:5555')
+        self.sio.emit('clear')
         # self.show_textiles()
 
 
@@ -84,17 +87,18 @@ class Pos(Screen):
                 # receipt.barcode("{B" + f'{transaction_id}', "CODE128", function_type="B")
                 # receipt.cut()
 
-            requests.post('http://127.0.0.1:5555/clear')
+            self.sio.emit('clear')
 
             for i, row in enumerate(self.textile_widget.rows):
                     data = self.textile_widget.get_row_at(i)
-                    requests.post('http://127.0.0.1:5555/update', json={
-                    'id': data[0],
-                    'name': data[1],
-                    'price': data[2],
-                    'quantity': data[3],
-                    'quantity_left': data[4]
-                })
+                  # Emitting the update event to the server with the data as JSON
+                    self.sio.emit('update', {
+                        'id': data[0],
+                        'name': data[1],
+                        'price': data[2],
+                        'quantity': data[3],
+                        'quantity_left': data[4]
+                    })
 
             self.query_one('#textile').value = ''
         except Exception as e:

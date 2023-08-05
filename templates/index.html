@@ -21,64 +21,26 @@
         </tbody>
     </table>
 
-    <script>
-$(document).ready(function() {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://127.0.0.1:5555');
     var table = $('#table_id').DataTable();
-    
-    var previousData = {};  // Store the previous data
 
-    function fetchData() {
-        $.getJSON('/data', function(data) {
-            if (Array.isArray(data)) {
-                var currentData = {};
+    socket.on('connect', function() {
+        socket.emit('fetch_data');
+    });
 
-                $.each(data, function(index, item) {
-                    // If this is a new row or the row has changed, update it in the DataTable
-                    if (!previousData[item.id] ||
-                        JSON.stringify(previousData[item.id]) !== JSON.stringify(item)) {
+    socket.on('update_data', function(data) {
+        table.clear().draw();
+        if (Array.isArray(data)) {
+            $.each(data, function(index, item) {
+                table.row.add([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
+            });
+        } else {
+            console.error('Received data is not an array');
+        }
+    });
+</script>
 
-                        if (previousData[item.id]) {  // If this is an existing row
-                            var row = table.row(function(idx, data, node) {
-                                return data[0] === item.id;
-                            });
-                            row.data([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
-                        } else {  // If this is a new row
-                            table.row.add([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
-                        }
-                    }
-
-                    // Update the current data
-                    currentData[item.id] = item;
-                });
-
-                // If a row from the old data doesn't exist in the new data, remove it from the DataTable
-                for (var id in previousData) {
-                    if (!currentData[id]) {
-                        var row = table.row(function(idx, data, node) {
-                            return data[0] === id;
-                        });
-                        row.remove().draw();
-                    }
-                }
-
-                // Update the previous data
-                previousData = currentData;
-            } else {
-                console.error('Fetched data is not an array');
-            }
-        }).fail(function() {
-            console.error('Failed to fetch data');
-        });
-    }
-    
-    fetchData();  // Fetch data when page loads
-    setInterval(fetchData, 1000);  // Fetch data every 1 second
-});
-
-
-
-    </script>
-    
-        
 </body>
 </html>
