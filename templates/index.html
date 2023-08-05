@@ -30,10 +30,13 @@ $(document).ready(function() {
     function fetchData() {
         $.getJSON('/data', function(data) {
             if (Array.isArray(data)) {
+                var currentData = {};
+
                 $.each(data, function(index, item) {
-                    if (!previousData[item.id] ||  // If this is a new row
-                        JSON.stringify(previousData[item.id]) !== JSON.stringify(item)) {  // Or if the row has changed
-                        // Update the row in the DataTable
+                    // If this is a new row or the row has changed, update it in the DataTable
+                    if (!previousData[item.id] ||
+                        JSON.stringify(previousData[item.id]) !== JSON.stringify(item)) {
+
                         if (previousData[item.id]) {  // If this is an existing row
                             var row = table.row(function(idx, data, node) {
                                 return data[0] === item.id;
@@ -42,11 +45,24 @@ $(document).ready(function() {
                         } else {  // If this is a new row
                             table.row.add([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
                         }
-
-                        // Update the previous data
-                        previousData[item.id] = item;
                     }
+
+                    // Update the current data
+                    currentData[item.id] = item;
                 });
+
+                // If a row from the old data doesn't exist in the new data, remove it from the DataTable
+                for (var id in previousData) {
+                    if (!currentData[id]) {
+                        var row = table.row(function(idx, data, node) {
+                            return data[0] === id;
+                        });
+                        row.remove().draw();
+                    }
+                }
+
+                // Update the previous data
+                previousData = currentData;
             } else {
                 console.error('Fetched data is not an array');
             }
@@ -58,6 +74,7 @@ $(document).ready(function() {
     fetchData();  // Fetch data when page loads
     setInterval(fetchData, 1000);  // Fetch data every 1 second
 });
+
 
 
     </script>
