@@ -10,6 +10,7 @@ import datetime as dt
 from dateutil import parser
 import os
 from textual.worker import Worker, get_current_worker
+from escpos.printer import Network
 
 
 # Calendar Screen --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +73,11 @@ class Calendar(Screen):
                     # self.log_feedback([str(key) for key in self.textile_widget.rows.keys()])
                 textiles_and_quantities = [(value[0], value[3]) for value in rows]
                 conf.create_transaction_with_textiles(textiles_and_quantities)
+
+                receipt = Network("192.168.5.79") #Printer IP Address
+                receipt.text("thank you for buying ;)\n")
+                receipt.barcode("{B012ABCDabcd", "CODE128", function_type="B")
+                receipt.cut()
 
 
             self.query_one('#textile').value = ''
