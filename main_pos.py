@@ -44,7 +44,7 @@ class Pos(Screen):
             self.textile_widget.add_column(f'{c[0]}', width=c[1])
 
         self.sio = socketio.Client()
-        self.sio.connect('http://127.0.0.1:5555')
+        self.sio.connect('http://192.168.5.145:5555')
         self.sio.emit('clear')
         # self.show_textiles()
 

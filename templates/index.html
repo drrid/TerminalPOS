@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>POS App</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jquery.dataTables.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='responsive.dataTables.css') }}">
     <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='jquery.dataTables.js') }}"></script>
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='dataTables.responsive.min.js') }}"></script>
+    <style>
+        #table_id {
+            font-size: 18px; /* Increase the font size */
+        }
+
+        #table_id th, #table_id td {
+            padding: 15px; /* Increase the padding */
+        }
+    </style>
 </head>
 <body>
-    <table id="table_id" class="display">
+    <table id="table_id" class="display responsive nowrap">
         <thead>
             <tr>
                 <th>ID</th>
@@ -22,25 +34,26 @@
     </table>
 
     <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='socket.io.js') }}"></script>
-<script>
-    var socket = io.connect('http://127.0.0.1:5555');
-    var table = $('#table_id').DataTable();
+    <script>
+        var socket = io.connect('http://192.168.5.145:5555');
+        var table = $('#table_id').DataTable({
+            responsive: true
+        });
 
-    socket.on('connect', function() {
-        socket.emit('fetch_data');
-    });
+        socket.on('connect', function() {
+            socket.emit('fetch_data');
+        });
 
-    socket.on('update_data', function(data) {
-        table.clear().draw();
-        if (Array.isArray(data)) {
-            $.each(data, function(index, item) {
-                table.row.add([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
-            });
-        } else {
-            console.error('Received data is not an array');
-        }
-    });
-</script>
-
+        socket.on('update_data', function(data) {
+            table.clear().draw();
+            if (Array.isArray(data)) {
+                $.each(data, function(index, item) {
+                    table.row.add([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
+                });
+            } else {
+                console.error('Received data is not an array');
+            }
+        });
+    </script>
 </body>
 </html>
