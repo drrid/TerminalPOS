@@ -63,6 +63,17 @@ class Calendar(Screen):
                 old_value = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
                 new_value = old_value + 1
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
+            elif event.value == 'confirm':
+                rows = []
+                for i, row in enumerate(self.textile_widget.rows):
+                    rows.append(self.textile_widget.get_row_at(i))
+
+
+                    # self.log_feedback([str(key) for key in self.textile_widget.rows.keys()])
+                textiles_and_quantities = [(value[0], value[3]) for value in rows]
+                conf.create_transaction_with_textiles(textiles_and_quantities)
+
+
             self.query_one('#textile').value = ''
         except Exception as e:
             self.log_error(e)
