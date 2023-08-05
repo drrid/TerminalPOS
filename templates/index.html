@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>POS App</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+</head>
+<body>
+    <table id="table_id" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Textile Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Quantity Left</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+$(document).ready(function() {
+    var table = $('#table_id').DataTable();
+    
+    var previousData = {};  // Store the previous data
+
+    function fetchData() {
+        $.getJSON('/data', function(data) {
+            if (Array.isArray(data)) {
+                $.each(data, function(index, item) {
+                    if (!previousData[item.id] ||  // If this is a new row
+                        JSON.stringify(previousData[item.id]) !== JSON.stringify(item)) {  // Or if the row has changed
+                        // Update the row in the DataTable
+                        if (previousData[item.id]) {  // If this is an existing row
+                            var row = table.row(function(idx, data, node) {
+                                return data[0] === item.id;
+                            });
+                            row.data([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
+                        } else {  // If this is a new row
+                            table.row.add([item.id, item.name, item.price, item.quantity, item.quantity_left]).draw();
+                        }
+
+                        // Update the previous data
+                        previousData[item.id] = item;
+                    }
+                });
+            } else {
+                console.error('Fetched data is not an array');
+            }
+        }).fail(function() {
+            console.error('Failed to fetch data');
+        });
+    }
+    
+    fetchData();  // Fetch data when page loads
+    setInterval(fetchData, 1000);  // Fetch data every 1 second
+});
+
+
+    </script>
+    
+        
+</body>
+</html>
