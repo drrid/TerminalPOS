@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 textile_data = []
 
-
 @app.route('/')
 def index():
     return render_template('index.html', data=textile_data)
