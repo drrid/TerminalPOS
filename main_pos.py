@@ -1,15 +1,10 @@
 from textual.app import App
 from textual.screen import Screen
-from textual.widgets import Footer, Header, Input, DataTable, Button, RichLog
+from textual.widgets import Footer, Header, Input, DataTable, RichLog
 from textual.coordinate import Coordinate
 from textual.containers import Container, Horizontal, Vertical
-from textual.reactive import reactive
-from textual import work
 import conf
 import datetime as dt
-from dateutil import parser
-import os
-from textual.worker import Worker, get_current_worker
 from escpos.printer import Network
 import socketio
 

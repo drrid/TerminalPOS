@@ -50,6 +50,8 @@
                 <tr>
                     <th>Textile Name</th>
                     <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Quantity Left</th>
                 </tr>
             </thead>
             <tbody>
@@ -72,7 +74,7 @@
             table.clear().draw();
             if (Array.isArray(data)) {
                 $.each(data, function(index, item) {
-                    table.row.add([item.name, item.quantity]).draw();
+                    table.row.add([item.name, item.quantity, item.price, item.quantity_left]).draw();
                 });
             } else {
                 console.error('Received data is not an array');
