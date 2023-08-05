@@ -11,7 +11,10 @@ from dateutil import parser
 import os
 from textual.worker import Worker, get_current_worker
 from escpos.printer import Network
+import socketio
 
+sio = socketio.Client()
+sio.connect('http://127.0.0.1:5000')  # Adjust the server URL based on your deployment
 
 # Calendar Screen --------------------------------------------------------------------------------------------------------------------------------------------------
 class Calendar(Screen):
@@ -56,6 +59,9 @@ class Calendar(Screen):
                 else:
                     quantity_left = conf.calculate_quantity_left(textile.textile_id)
                     self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.price, 0, quantity_left], key=str(id))
+
+                    sio.emit('update_table', [textile.textile_id, textile.name, textile.price, 0, quantity_left])
+
                     row = self.textile_widget.get_row_index(str(id))
                     self.textile_widget.move_cursor(row=row)
 
@@ -73,6 +79,7 @@ class Calendar(Screen):
                     # self.log_feedback([str(key) for key in self.textile_widget.rows.keys()])
                 textiles_and_quantities = [(value[0], value[3]) for value in rows]
                 transaction_id = conf.create_transaction_with_textiles(textiles_and_quantities)
+
 
                 receipt = Network("192.168.5.79") #Printer IP Address
                 receipt.text(f"{transaction_id}\n")
