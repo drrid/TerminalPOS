@@ -72,11 +72,14 @@ class Calendar(Screen):
 
                     # self.log_feedback([str(key) for key in self.textile_widget.rows.keys()])
                 textiles_and_quantities = [(value[0], value[3]) for value in rows]
-                conf.create_transaction_with_textiles(textiles_and_quantities)
+                transaction_id = conf.create_transaction_with_textiles(textiles_and_quantities)
 
                 receipt = Network("192.168.5.79") #Printer IP Address
-                receipt.text("thank you for buying ;)\n")
-                receipt.barcode("{B012ABCDabcd", "CODE128", function_type="B")
+                receipt.text(f"{transaction_id}\n")
+                receipt.text(f"id -- Textile Name   --  Price --    Quantity\n")
+                for r in rows:
+                    receipt.text(f"{r[0]}--{r[1]}--{r[2]}--{r[3]}\n")
+                receipt.barcode("{B" + f'{transaction_id}', "CODE128", function_type="B")
                 receipt.cut()
 
 
