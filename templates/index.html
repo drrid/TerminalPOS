@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <title>POS App</title>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
-    <script type="text/javascript" charset="utf8" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jquery.dataTables.css') }}">
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='jquery.dataTables.js') }}"></script>
 </head>
 <body>
     <table id="table_id" class="display">
@@ -21,7 +21,7 @@
         </tbody>
     </table>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='socket.io.js') }}"></script>
 <script>
     var socket = io.connect('http://127.0.0.1:5555');
     var table = $('#table_id').DataTable();
