@@ -201,6 +201,6 @@ def select_textile_by_id(textile_id):
 init_db()
 
 
-textiles_and_quantities = [(3, 3), (4, 1)]
-transaction_id = create_transaction_with_textiles(textiles_and_quantities)
-print(calculate_quantity_left(4))
+# textiles_and_quantities = [(3, 3), (4, 1)]
+# transaction_id = create_transaction_with_textiles(textiles_and_quantities)
+# print(calculate_quantity_left(4))

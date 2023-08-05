@@ -1,6 +1,6 @@
 from textual.app import App
 from textual.screen import Screen
-from textual.widgets import Footer, Header, Input, DataTable, Button, TextLog
+from textual.widgets import Footer, Header, Input, DataTable, Button, RichLog
 from textual.coordinate import Coordinate
 from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
@@ -15,11 +15,6 @@ from textual.worker import Worker, get_current_worker
 # Calendar Screen --------------------------------------------------------------------------------------------------------------------------------------------------
 class Calendar(Screen):
 
-    week_index = reactive(0)
-    row_index_id = {}
-    row_index_enc_id = {}
-    modify_pt = False
-
 
     def compose(self):
         self.textile_widget = DataTable(id='pt_table', zebra_stripes=True, fixed_columns=1)
@@ -29,7 +24,7 @@ class Calendar(Screen):
                                     Input('', placeholder='Textile', id='textile', classes='inputs'), id='inputs'),
                                 id='upper_cnt')
         self.tables_container = Vertical(
-                            self.textile_widget, TextLog(id='feedback', highlight=True, markup=True),
+                            self.textile_widget, RichLog(id='feedback', highlight=True, markup=True),
                             id='lower_cnt')
         
         self.footer_widget = Footer()
@@ -49,10 +44,29 @@ class Calendar(Screen):
 
 
     def on_input_submitted(self, event: Input.Submitted):
-        # self.log_feedback(event.value)
-        textile = conf.select_textile_by_id(int(event.value))
-        # self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.price, textile.length, textile.textile_id])
-        # self.log_feedback(textile)
+        try:
+            if '-' in event.value:
+                id = int(event.value.split('-')[0])
+                textile = conf.select_textile_by_id(id)
+                if str(id) in self.textile_widget.rows.keys():
+                    row = self.textile_widget.get_row_index(str(id))
+                    self.textile_widget.move_cursor(row=row)
+                    return
+                else:
+                    quantity_left = conf.calculate_quantity_left(textile.textile_id)
+                    self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.price, 0, quantity_left], key=str(id))
+                    row = self.textile_widget.get_row_index(str(id))
+                    self.textile_widget.move_cursor(row=row)
+
+            elif event.value == 'add1':
+                current_row = self.textile_widget.cursor_row
+                old_value = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
+                new_value = old_value + 1
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
+            self.query_one('#textile').value = ''
+        except Exception as e:
+            self.log_error(e)
+
 
     def log_error(self, msg):
         timestamp = dt.datetime.now()

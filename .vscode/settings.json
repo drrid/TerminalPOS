@@ -1,0 +1,18 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "192.168.5.225",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "shop",
+            "database": "shop",
+            "username": "root",
+            "password": "matingogenius"
+        }
+    ]
+}
