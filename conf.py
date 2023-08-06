@@ -17,7 +17,7 @@ Session = sessionmaker(bind=engine)
 
 
 
-# Patient Class -----------------------------------------------------------------------------------------------------------
+# Textile Class -----------------------------------------------------------------------------------------------------------
 class Textile(Base):
 
     __tablename__ = 'textile'
@@ -28,12 +28,20 @@ class Textile(Base):
     weight = Column(Float())
     cost = Column(Float())
     price = Column(Float())
+    notes = Column(String(200))
     added_time = Column(DateTime, default=func.now())
 
     transactions = relationship('TransactionItem', back_populates='textile')
 
+    @property
+    def cost_per_meter(self):
+        if self.length and self.weight and self.cost:  # checking if these values are not None
+            return round((self.cost * self.weight) / self.length)
+        else:
+            return None
+
     def __repr__(self):
-        return f'{self.textile_id},{self.name},{self.length},{self.width},{self.weight},{self.cost},{self.price},{self.added_time}'
+        return f'{self.textile_id},{self.name},{self.length},{self.width},{self.weight},{self.cost},{self.price},{self.added_time},{self.notes},{self.cost_per_meter}'
 #---------------------------------------------------------------------------------------------------------------------------
 
 class Transaction(Base):
@@ -144,7 +152,7 @@ def select_all_starts_with(**kwargs):
         try:
             filters = [getattr(Textile, key).startswith(value) for key, value in kwargs.items()]
             return [(str(r.textile_id), str(r.name), str(r.length), str(r.width), 
-                     str(r.weight), str(r.cost), str(r.price),  str(r.added_time)) 
+                     str(r.weight), str(r.cost), str(r.price),  str(r.added_time), str(r.notes), str(r.cost_per_meter)) 
                     for r in session.query(Textile).filter(*filters)]
         except Exception as e:
             print(e)

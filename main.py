@@ -10,6 +10,7 @@ import datetime as dt
 from dateutil import parser
 import os
 from textual.worker import Worker, get_current_worker
+import requests
 
 
 # Calendar Screen --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -33,7 +34,7 @@ class PosBunker(Screen):
                                     Input('', placeholder='Textile Name', id='name', classes='inputs'),Input('', placeholder='Length', id='length', classes='inputs'),
                                     Input('', placeholder='width', id='width', classes='inputs'),
                                     Input('', placeholder='weight', id='weight', classes='inputs'),Input('', placeholder='cost', id='cost', classes='inputs'),
-                                    Input('', placeholder='price', id='price', classes='inputs'),
+                                    Input('', placeholder='price', id='price', classes='inputs'),Input('', placeholder='notes-t', id='notes-t', classes='inputs'),
                                     Button('Add', id='addtextile', classes='inputs'),Button('Update', id='updatetextile', classes='inputs'), id='inputs'),
                                 id='upper_cnt')
         self.tables_container = Vertical(
@@ -50,7 +51,8 @@ class PosBunker(Screen):
 
     def on_mount(self):
 
-        PT_CLMN = [['ID', 3], ['Textile Name', 13], ['length', 13], ['width', 12], ['weight', 10], ['cost', 10], ['price', 10], ['added time', 30]]
+        PT_CLMN = [['ID', 3], ['Textile Name', 13], ['length', 13], ['width', 12], ['weight', 10], ['cost', 10], ['price', 10], 
+                   ['added time', 30], ['notes', 50], ['cost per meter', 30]]
         for c in PT_CLMN:
             self.textile_widget.add_column(f'{c[0]}', width=c[1])
         self.show_textiles()
@@ -64,7 +66,7 @@ class PosBunker(Screen):
 
     def on_input_changed(self, event: Input.Changed):
         try:
-            if event.input.id == 'name':
+            if event.input.id in ['name', 'notes-t']:
                 pass
             else:
                 if self.is_float(event.input.value):
@@ -98,10 +100,10 @@ class PosBunker(Screen):
                     self.log_error("Textile with the same details already exists.")
                     return
                 else:
-                    self.add_textile(name=inp[0].value, length=inp[1].value, width=inp[2].value, weight=inp[3].value, cost=inp[4].value, price=inp[5].value)
+                    self.add_textile(name=inp[0].value, length=inp[1].value, width=inp[2].value, weight=inp[3].value, cost=inp[4].value, price=inp[5].value, notes=inp[6].value)
             elif event.control.id == 'updatetextile':
                 self.update_textile(name=inp[0].value, length=inp[1].value, width=inp[2].value, 
-                                    weight=inp[3].value, cost=inp[4].value, price=inp[5].value)
+                                    weight=inp[3].value, cost=inp[4].value, price=inp[5].value, notes=inp[6].value)
 
         except Exception as e:
             self.log_error("Error occurred while performing textile action: " + str(e))
@@ -119,8 +121,10 @@ class PosBunker(Screen):
                 for i, inp in enumerate(self.query(Input)):
                     inp.value = self.textile_widget.get_cell_at(Coordinate(cursor.row, i+1))
                     inp.styles.background = 'teal'
-                    # if i==4:
-                    #     self.query_one(f'#{inp}').value = int(self.textile_widget.get_cell_at(Coordinate(cursor.row, i+1)))
+                    if inp.id == 'notes-t':
+                        self.query_one('#notes-t').value = self.textile_widget.get_cell_at(Coordinate(cursor.row, 8))    
+                        # self.log_feedback(self.textile_widget.get_cell_at(Coordinate(cursor.row, 8)))               
+                    
                 self.modify_pt = True
                 pass
 
@@ -134,10 +138,10 @@ class PosBunker(Screen):
             
 
 
-    def add_textile(self, name, length, width, weight, cost, price):
+    def add_textile(self, name, length, width, weight, cost, price, notes):
         if self.modify_pt == False:
             try:
-                textile = conf.Textile(name=name, length=length, width=width, weight=weight, cost=cost, price=price)
+                textile = conf.Textile(name=name, length=length, width=width, weight=weight, cost=cost, price=price, notes=notes)
                 textile_id = conf.save_to_db(textile)
                 self.show_textiles()
                 self.log_feedback("Textile added successfully.")
@@ -150,7 +154,7 @@ class PosBunker(Screen):
                 self.log_error(f"Error adding textile: {e}")
 
 
-    def update_textile(self, name, length, width, weight, cost, price):
+    def update_textile(self, name, length, width, weight, cost, price, notes):
         try:
             self.action_modify_textile()
             cursor = self.textile_widget.cursor_coordinate
@@ -159,7 +163,7 @@ class PosBunker(Screen):
             # existing_textile = conf.select_textile_by_details(name=inp[1], length=inp[2], width=inp[3], weight=inp[4], cost=inp[5], price=inp[6])
 
             # old_textile = conf.select_textile_by_id(inp[0])
-            conf.update_textile(textile_id=inp[0], name=name, length=length, width=width, weight=weight, cost=cost, price=price)
+            conf.update_textile(textile_id=inp[0], name=name, length=length, width=width, weight=weight, cost=cost, price=price, notes=notes)
             self.log_feedback("textile updated successfully.")
             self.show_textiles()
             row_index = self.textile_widget.get_row_index(inp[0])
@@ -198,6 +202,22 @@ class PosBunker(Screen):
             self.log_error("Error occurred in show_textiles: " + str(e))
 
 
+    def action_request_export(self):
+        url = "http://192.168.5.133:5000/generate_qr_custom"
+        row = self.textile_widget.cursor_row
+        data = self.textile_widget.get_row_at(row)
+        qr_code = f'{data[0]} {data[1]}'
+        # self.log_feedback(qr_code)
+        params = {"field1": qr_code}
+        
+        response = requests.get(url, params=params)
+
+        if response.status_code == 200:
+            self.log_feedback("Request was successful!")
+            return response.text
+        else:
+            self.log_error("Request failed!")
+            return None
 
 
 
