@@ -108,8 +108,6 @@ class PosBunker(Screen):
             return
 
 
-
-
     def action_modify_textile(self):
         try:
             cursor = self.textile_widget.cursor_coordinate
