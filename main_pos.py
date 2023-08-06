@@ -20,7 +20,7 @@ class Pos(Screen):
             Input('', placeholder='Textile', id='textile', classes='inputs'), id='inputs'),
             id='upper_cnt')
         self.tables_container = Vertical(
-            self.textile_widget, RichLog(id='feedback', highlight=True, markup=True),
+            self.textile_widget, RichLog(id='feedback', highlight=True, markup=True, wrap=True),
             id='lower_cnt')
 
         self.footer_widget = Footer()
@@ -31,7 +31,7 @@ class Pos(Screen):
         yield self.footer_widget
 
     def on_mount(self):
-        PT_CLMN = [['ID', 3], ['Textile Name', 13], ['price', 13], ['quantity', 12], ['quantity left', 10]]
+        PT_CLMN = [['ID', 7], ['Textile Name', 30], ['price', 20], ['quantity', 20], ['quantity left', 20]]
         for c in PT_CLMN:
             self.textile_widget.add_column(f'{c[0]}', width=c[1])
         self.query_one('#textile').focus()

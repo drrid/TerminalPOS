@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>POS App</title>
+    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jquery.dataTables.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='responsive.dataTables.css') }}">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='jquery.dataTables.js') }}"></script>
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='dataTables.responsive.min.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <form id="textile_form">
+            <input type="text" id="textile_name" placeholder="Textile Name" class="autocomplete">
+            <input type="number" id="quantity" placeholder="Quantity">
+            <input type="number" id="price" placeholder="Price">
+            <input type="number" id="quantity_left" placeholder="Quantity Left">
+            <button type="button" id="add_textile" class="btn btn-primary">Add Textile</button>
+        </form>
+        <table id="table_id" class="display responsive nowrap table table-striped table-bordered table-row-animation">
+            <thead>
+                <tr>
+                    <th>Textile Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Quantity Left</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button id="confirm" class="btn btn-success">Confirm Transaction</button>
+    </div>
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='socket.io.js') }}"></script>
+    <script>
+        // Fetch textile names for autocomplete
+        $(document).ready(function() {
+            $.get('/textiles', function(data) {
+                $('.autocomplete').autocomplete({
+                    source: data
+                });
+            });
+        });
+
+        var socket = io.connect('http://192.168.5.145:5555');
+        var table = $('#table_id').DataTable({ responsive: true });
+
+        socket.on('connect', function() { socket.emit('fetch_data'); });
+
+        socket.on('update_data', function(data) {
+            table.clear().draw();
+            $.each(data, function(index, item) {
+                table.row.add([item.name, item.quantity, item.price, item.quantity_left]).draw();
+            });
+        });
+
+        $('#add_textile').click(function() {
+            var textileData = {
+                name: $('#textile_name').val(),
+                quantity: $('#quantity').val(),
+                price: $('#price').val(),
+                quantity_left: $('#quantity_left').val()
+            };
+            socket.emit('update', textileData);
+            $('#textile_name').val('');
+            $('#quantity').val('');
+            $('#price').val('');
+            $('#quantity_left').val('');
+        });
+
+        $('#confirm').click(function() {
+            $.post("/confirm_transaction", function(data) {
+                if (data.status === 'success') {
+                    alert('Transaction Confirmed!');
+                    socket.emit('clear'); // Optional: clear data after confirmation
+                }
+            });
+        });
+    </script>
+</body>
+</html>

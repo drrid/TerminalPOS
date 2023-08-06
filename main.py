@@ -1,6 +1,6 @@
 from textual.app import App
 from textual.screen import Screen
-from textual.widgets import Footer, Header, Input, DataTable, Button, TextLog
+from textual.widgets import Footer, Header, Input, DataTable, Button, RichLog
 from textual.coordinate import Coordinate
 from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
@@ -13,8 +13,12 @@ from textual.worker import Worker, get_current_worker
 
 
 # Calendar Screen --------------------------------------------------------------------------------------------------------------------------------------------------
-class Calendar(Screen):
-
+class PosBunker(Screen):
+    BINDINGS = [
+            ("f2", "modify_textile", "Modify Textile"),
+            ("f5", "clear_inputs", "Clear"),
+            ("f10", "request_export", "Export")]
+    
     week_index = reactive(0)
     row_index_id = {}
     row_index_enc_id = {}
@@ -33,7 +37,7 @@ class Calendar(Screen):
                                     Button('Add', id='addtextile', classes='inputs'),Button('Update', id='updatetextile', classes='inputs'), id='inputs'),
                                 id='upper_cnt')
         self.tables_container = Vertical(
-                            self.textile_widget, TextLog(id='feedback', highlight=True, markup=True),
+                            self.textile_widget, RichLog(id='feedback', highlight=True, markup=True),
                             id='lower_cnt')
         
         self.footer_widget = Footer()
@@ -51,79 +55,54 @@ class Calendar(Screen):
             self.textile_widget.add_column(f'{c[0]}', width=c[1])
         self.show_textiles()
 
+    def is_float(self, value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
 
     def on_input_changed(self, event: Input.Changed):
-        if event.input.id != 'notes':
-            try:
-                name = self.query_one('#name').value
-                length = self.query_one('#length').value
-                width = self.query_one('#width').value
-                weight = self.query_one('#weight').value
-                cost = self.query_one('#cost').value
-                price = self.query_one('#price').value
-                # if phone.isdigit():
-                #     phone = int(phone)
-                # else:
-                #     self.query_one('#phone').value = ''
+        try:
+            if event.input.id == 'name':
+                pass
+            else:
+                if self.is_float(event.input.value):
+                        pass
+                else:
+                    self.query_one(f'#{event.input.id}').value = ''
 
-                textiles = conf.select_all_starts_with(name=name, length=length, width=width, weight=weight, cost=cost, price=price)
-                if len(textiles) != 0:
-                    textile_id = textiles[0][0]
-                    row_index = self.row_index_id.get(textile_id)
-                    self.textile_widget.move_cursor(row=row_index)
+            inp = self.query(Input)
+            textiles = conf.select_all_starts_with(name=inp[0].value, length=inp[1].value, width=inp[2].value, weight=inp[3].value, cost=inp[4].value, price=inp[5].value)
+            if len(textiles) != 0:
+                textile_id = textiles[0][0]
+                row_index = self.row_index_id.get(textile_id)
+                self.textile_widget.move_cursor(row=row_index)
 
-            except Exception as e:
-                self.log_error(e)
+        except Exception as e:
+            self.log_error(e)
 
 
     def on_button_pressed(self, event: Button.Pressed):
-        # try:
-        #     cursor = self.textile_widget.cursor_coordinate
-        #     # textile_id = self.textile_widget.get_cell_at(Coordinate(cursor.row, 0))
-        # except Exception as e:
-        #     self.log_error("Error occurred while fetching textile ID: " + str(e))
-        #     return
-
         try:
-            name = self.query_one('#name').value
-            length = self.query_one('#length').value
-            width = self.query_one('#width').value
-            weight = self.query_one('#weight').value
-            cost = self.query_one('#cost').value
-            price = self.query_one('#price').value
-        except Exception as e:
-            self.log_error("Error occurred while fetching input values: " + str(e))
-            return
-
-        # # Validate the input values
-        # if not name or not length or not phone or not date_of_birth:
-        #     self.log_error("Please fill in all fields.")
-        #     return
-
-        # try:
-        #     parsed_phone = int(phone)
-        # except ValueError:
-        #     self.log_error("Invalid phone number. Please enter a valid integer.")
-        #     return
-
-        # Check for textile duplication
-        try:
-            existing_textile = conf.select_textile_by_details(name, length, width, weight, cost, price)
-            if existing_textile:
-                self.log_error("Textile with the same details already exists.")
-                return
-        except Exception as e:
-            self.log_error("Error occurred while checking for existing textile: " + str(e))
-            return
-
-        try:
+            inp = self.query(Input)
+            existing_textile = conf.select_textile_by_details(name=inp[0].value, length=inp[1].value, width=inp[2].value, weight=inp[3].value, cost=inp[4].value, price=inp[5].value)
+            
+            for i in inp:
+                if i.value == '':
+                    # self.log_error("Textile with the same details already exists.")
+                    return
+            
             if event.control.id == 'addtextile':
-                self.add_textile(name, length, width, weight, cost, price)
+                if existing_textile is not None:
+                    self.log_error("Textile with the same details already exists.")
+                    return
+                else:
+                    self.add_textile(name=inp[0].value, length=inp[1].value, width=inp[2].value, weight=inp[3].value, cost=inp[4].value, price=inp[5].value)
             elif event.control.id == 'updatetextile':
-                self.update_textile(name, length, width, weight, cost, price)
-            else:
-                self.log_error("Invalid button event.")
-                return
+                self.update_textile(name=inp[0].value, length=inp[1].value, width=inp[2].value, 
+                                    weight=inp[3].value, cost=inp[4].value, price=inp[5].value)
+
         except Exception as e:
             self.log_error("Error occurred while performing textile action: " + str(e))
             return
@@ -131,30 +110,29 @@ class Calendar(Screen):
 
 
 
-    # def action_modify_patient(self):
-    #     try:
-    #         cursor = self.textile_widget.cursor_coordinate
-    #         # patient_id = self.patient_widget.get_cell_at(Coordinate(cursor.row, 0))
-    #         inputs = ['fname', 'lname', 'dob', 'phone']
-    #         self.query_one('#fname').focus()
+    def action_modify_textile(self):
+        try:
+            cursor = self.textile_widget.cursor_coordinate
+            # inputs = ['fname', 'lname', 'dob', 'phone']
+            self.query_one('#name').focus()
 
-    #         if self.modify_pt == False:
+            if self.modify_pt == False:
 
-    #             for i, inp in enumerate(inputs):
-    #                 self.query_one(f'#{inp}').value = self.textile_widget.get_cell_at(Coordinate(cursor.row, i+1))
-    #                 self.query_one(f'#{inp}').styles.background = 'teal'
-    #                 if i==4:
-    #                     self.query_one(f'#{inp}').value = int(self.textile_widget.get_cell_at(Coordinate(cursor.row, i+1)))
-    #             self.modify_pt = True
-    #             pass
+                for i, inp in enumerate(self.query(Input)):
+                    inp.value = self.textile_widget.get_cell_at(Coordinate(cursor.row, i+1))
+                    inp.styles.background = 'teal'
+                    # if i==4:
+                    #     self.query_one(f'#{inp}').value = int(self.textile_widget.get_cell_at(Coordinate(cursor.row, i+1)))
+                self.modify_pt = True
+                pass
 
-    #         else :
-    #             for i, inp in enumerate(inputs):
-    #                 self.query_one(f'#{inp}').value = ''
-    #                 self.query_one(f'#{inp}').styles.background = self.styles.background
-    #             self.modify_pt = False
-    #     except Exception as e:
-    #         self.log_error(f"Error in modify_patient: {e}")
+            else :
+                for i, inp in enumerate(self.query(Input)):
+                    inp.value = ''
+                    inp.styles.background = self.styles.background
+                self.modify_pt = False
+        except Exception as e:
+            self.log_error(f"Error in modify_patient: {e}")
             
 
 
@@ -174,26 +152,25 @@ class Calendar(Screen):
                 self.log_error(f"Error adding textile: {e}")
 
 
-    def update_textile(self, patient_id, first_name, last_name, phone, date_of_birth):
+    def update_textile(self, name, length, width, weight, cost, price):
         try:
-            self.action_modify_patient()
-            old_patient = conf.select_patient_by_id(patient_id)
-            conf.update_patient(patient_id=patient_id, first_name=first_name, last_name=last_name, phone=phone, date_of_birth=date_of_birth)
+            self.action_modify_textile()
+            cursor = self.textile_widget.cursor_coordinate
+            inp = self.textile_widget.get_row_at(cursor.row)
+            
+            # existing_textile = conf.select_textile_by_details(name=inp[1], length=inp[2], width=inp[3], weight=inp[4], cost=inp[5], price=inp[6])
+
+            # old_textile = conf.select_textile_by_id(inp[0])
+            conf.update_textile(textile_id=inp[0], name=name, length=length, width=width, weight=weight, cost=cost, price=price)
             self.log_feedback("textile updated successfully.")
             self.show_textiles()
-            row_index = self.row_index_id.get(str(patient_id))
-            self.textile_widget.move_cursor(row=row_index)
+            row_index = self.textile_widget.get_row_index(inp[0])
+            # self.log_feedback(row_index)
+            self.textile_widget.move_cursor(row=int(row_index))
 
-            old_foldername = f"Z:\\patients\\{patient_id} {old_patient.first_name} {old_patient.last_name}"
-            new_foldername = f"Z:\\patients\\{patient_id} {first_name} {last_name}"
-            isExist = os.path.exists(f'Z:\\patients\\{old_foldername}')
-            if isExist:
-                os.rename(old_foldername, new_foldername)
-            else:
-                os.makedirs(new_foldername)
 
         except Exception as e:
-            self.log_error(f"Error updating patient: {e}")
+            self.log_error(f"Error updating textile: {e}")
 
 
     def log_error(self, msg):
@@ -226,17 +203,17 @@ class Calendar(Screen):
 
 
 
-    def on_data_table_cell_selected(self, message: DataTable.CellSelected):
-        try:
-            if message.control.id == 'enc_table':
-                self.query_one('#notes').focus()
-                self.query_one('#notes').value = ''
-            if message.control.id == 'cal_table':
-                self.selected_calendar()
-                self.selected_calendar()
-                # self.update_tooltip()
-        except Exception as e:
-            self.log_error(e)
+    # def on_data_table_cell_selected(self, message: DataTable.CellSelected):
+    #     try:
+    #         if message.control.id == 'enc_table':
+    #             self.query_one('#notes').focus()
+    #             self.query_one('#notes').value = ''
+    #         if message.control.id == 'cal_table':
+    #             self.selected_calendar()
+    #             self.selected_calendar()
+    #             # self.update_tooltip()
+    #     except Exception as e:
+    #         self.log_error(e)
 
 
     # def on_data_table_cell_highlighted(self, message: DataTable.CellHighlighted):
@@ -245,46 +222,43 @@ class Calendar(Screen):
 
     
 
-    def on_data_table_row_selected(self, message: DataTable.RowSelected):
-        try:
-            if message.control.id == 'pt_table':
-                if self.modify_pt == True:
-                    self.action_modify_patient()
-                self.encounter_widget.cursor_type = 'row'
-                cursor = self.calendar_widget.cursor_coordinate
-                cursor_value = self.calendar_widget.get_cell_at(cursor)
-                if '_' not in cursor_value:
-                    self.calendar_widget.move_cursor(row=0, column=0)
-                self.show_encounters()
-            elif message.control.id == 'enc_table':
-                self.encounter_widget.cursor_type = 'cell'
-                self.calendar_widget.move_cursor(row=0, column=0)
-        except Exception as e:
-            self.log_error(e)
+    # def on_data_table_row_selected(self, message: DataTable.RowSelected):
+    #     try:
+    #         if message.control.id == 'pt_table':
+    #             if self.modify_pt == True:
+    #                 self.action_modify_patient()
+    #             self.encounter_widget.cursor_type = 'row'
+    #             cursor = self.calendar_widget.cursor_coordinate
+    #             cursor_value = self.calendar_widget.get_cell_at(cursor)
+    #             if '_' not in cursor_value:
+    #                 self.calendar_widget.move_cursor(row=0, column=0)
+    #             self.show_encounters()
+    #         elif message.control.id == 'enc_table':
+    #             self.encounter_widget.cursor_type = 'cell'
+    #             self.calendar_widget.move_cursor(row=0, column=0)
+    #     except Exception as e:
+    #         self.log_error(e)
             
 
     
 # ------------------------------------------------------------------------Main App-----------------------------------------------------------------------------------------
-class PMSApp(App):
-    BINDINGS = [("ctrl+left", "previous_week", "Previous Week"),
-            ("ctrl+right", "next_week", "Next Week"),
-            ("f1", "add_encounter", "Add Encounter"),
-            ("f2", "modify_patient", "Modify Patient"),
-            ("ctrl+delete", "delete_encounter", "Delete Encounter"),
+class PosBunkerApp(App):
+    BINDINGS = [
+            ("f2", "modify_textile", "Modify Textile"),
             ("f5", "clear_inputs", "Clear"),
             ("f10", "request_export", "Export")]
     
     CSS_PATH = 'styling.css'
-    TITLE = 'TerminalPMS'
-    SUB_TITLE = 'by Dr.Abdennebi Tarek'
-    SCREENS = {"calendar": Calendar()}
+    TITLE = 'TerminalPOS-Bunker'
+    # SUB_TITLE = 'by Dr.Abdennebi Tarek'
+    SCREENS = {"PosBunker": PosBunker()}
 
     def on_mount(self):
-        self.push_screen(self.SCREENS.get('calendar'))
+        self.push_screen(self.SCREENS.get('PosBunker'))
 
 
 if __name__ == "__main__":
-    app = PMSApp()
+    app = PosBunkerApp()
     app.run()
 
  

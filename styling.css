@@ -2,7 +2,7 @@
     layout: grid;
     grid-size: 1 2;
     row-span: 2;
-    grid-rows: 8% 92%;
+    grid-rows: 15% 85%;
   }
   
 
@@ -24,7 +24,7 @@
 
     
   .inputs {
-    width: 1fr;
+    width: 2fr;
   }
 
 

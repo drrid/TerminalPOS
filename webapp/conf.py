@@ -162,15 +162,15 @@ def select_all_textiles():
     
 
 
-def select_textile_by_details(name, length, width, weight, cost, price):
+def select_textile_by_details(textile_name, textile_length, textile_width, textile_weight_of_roll, textile_cost_of_roll, textile_price_per_meter):
     with Session() as session:
         try:
-            textile = session.query(Textile).filter(Textile.name == name,
-                                                    Textile.length == length,
-                                                    Textile.width == width,
-                                                    Textile.weight == weight,
-                                                    Textile.cost == cost,
-                                                    Textile.price == price).first()
+            textile = session.query(Textile).filter(Textile.name == textile_name,
+                                                    Textile.length == textile_length,
+                                                    Textile.width == textile_width,
+                                                    Textile.weight == textile_weight_of_roll,
+                                                    Textile.cost == textile_cost_of_roll,
+                                                    Textile.price == textile_price_per_meter).first()
             return textile
         except Exception as e:
             print(f"Error selecting Textile by details: {e}")
