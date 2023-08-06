@@ -44,10 +44,21 @@ class Pos(Screen):
             self.log_error(f"Connection error: {e}")
 
 
+    def is_float(self, value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+        
     def on_input_submitted(self, event: Input.Submitted):
         try:
-            if '-' in event.value:
-                id = int(event.value.split('-')[0])
+            textiles = conf.select_all_textiles()
+            qr_code_ids = [f'{textile.textile_id} {textile.name}' for textile in textiles]
+
+            if event.value in qr_code_ids:
+                # if self.is_float(event.value):
+                id = int(event.value.split(' ')[0])
                 textile = conf.select_textile_by_id(id)
                 if str(id) in self.textile_widget.rows.keys():
                     row = self.textile_widget.get_row_index(str(id))
@@ -58,11 +69,12 @@ class Pos(Screen):
                     row = self.textile_widget.get_row_index(str(id))
                     self.textile_widget.move_cursor(row=row)
 
-            elif event.value == 'add1':
+            elif self.is_float(event.value):
                 current_row = self.textile_widget.cursor_row
                 old_value = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
-                new_value = old_value + 1
+                new_value = old_value + float(event.value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
+                
             elif event.value == 'confirm':
                 rows = []
                 for i, row in enumerate(self.textile_widget.rows):
@@ -75,8 +87,9 @@ class Pos(Screen):
 
                 self.print_receipt(transaction_id, rows)
 
+            
+            
             self.sio.emit('clear')
-
             for i, row in enumerate(self.textile_widget.rows):
                     data = self.textile_widget.get_row_at(i)
                   # Emitting the update event to the server with the data as JSON
