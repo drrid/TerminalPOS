@@ -33,6 +33,14 @@ class Textile(Base):
 
     transactions = relationship('TransactionItem', back_populates='textile')
 
+    def calculate_price(self, quantity):
+        if quantity >= 5:
+            return self.price * 0.9
+        elif quantity >= 3:
+            return self.price * 0.95
+        else:
+            return self.price
+
     @property
     def cost_per_meter(self):
         if self.length and self.weight and self.cost:  # checking if these values are not None
@@ -103,7 +111,14 @@ def create_transaction_with_textiles(textiles_and_quantities):
             for textile_id, quantity in textiles_and_quantities:
                 textile = session.query(Textile).filter_by(textile_id=textile_id).first()
                 if textile:
-                    subtotal = quantity * textile.price
+                    # if quantity >= 3 and quantity < 5:
+                    #     subtotal = quantity * textile.price * 0.95
+                    # if quantity >= 5:
+                    #     subtotal = quantity * textile.price * 0.9
+                    # else:
+                        # subtotal = quantity * textile.price
+                    subtotal = quantity * textile.calculate_price(quantity)
+
                     new_item = TransactionItem(transaction_id=new_transaction.transaction_id,
                                                textile_id=textile_id,
                                                quantity=quantity,

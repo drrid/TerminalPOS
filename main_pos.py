@@ -65,16 +65,22 @@ class Pos(Screen):
                     self.textile_widget.move_cursor(row=row)
                 else:
                     quantity_left = conf.calculate_quantity_left(textile.textile_id)
-                    self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.price, 0, quantity_left], key=str(id))
+                    self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.calculate_price(0), 0, quantity_left], key=str(id))
                     row = self.textile_widget.get_row_index(str(id))
                     self.textile_widget.move_cursor(row=row)
 
             elif self.is_float(event.value):
                 current_row = self.textile_widget.cursor_row
-                old_value = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
-                new_value = old_value + float(event.value)
+                quantity = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
+                # price = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
+
+                new_value = quantity + float(event.value)
+
+                price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
-                
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
+
+
             elif event.value == 'confirm':
                 rows = []
                 for i, row in enumerate(self.textile_widget.rows):

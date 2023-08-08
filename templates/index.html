@@ -58,6 +58,8 @@
             </tbody>
         </table>
     </div>
+    <div id="total_purchase">Total Purchase: 0</div>
+
 
     <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='socket.io.js') }}"></script>
     <script>
@@ -80,6 +82,20 @@
                 console.error('Received data is not an array');
             }
         });
+
+        socket.on('update_data', function(data) {
+    table.clear().draw();
+    var total_purchase = 0; // Initialize total purchase
+    if (Array.isArray(data)) {
+        $.each(data, function(index, item) {
+            table.row.add([item.name, item.quantity, item.price, item.quantity_left]).draw();
+            total_purchase += item.quantity * item.price; // Multiply quantity by price and add to total
+        });
+        $('#total_purchase').text('Total Purchase: ' + total_purchase.toFixed(2)); // Update the total purchase on the page
+    } else {
+        console.error('Received data is not an array');
+    }
+});
     </script>
 </body>
 </html>
