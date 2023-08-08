@@ -52,6 +52,7 @@
                     <th>Quantity</th>
                     <th>Price</th>
                     <th>Quantity Left</th>
+                    <th>Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -72,24 +73,24 @@
             socket.emit('fetch_data');
         });
 
-        socket.on('update_data', function(data) {
-            table.clear().draw();
-            if (Array.isArray(data)) {
-                $.each(data, function(index, item) {
-                    table.row.add([item.name, item.quantity, item.price, item.quantity_left]).draw();
-                });
-            } else {
-                console.error('Received data is not an array');
-            }
-        });
+        // socket.on('update_data', function(data) {
+        //     table.clear().draw();
+        //     if (Array.isArray(data)) {
+        //         $.each(data, function(index, item) {
+        //             table.row.add([item.name, item.quantity, item.price, item.quantity_left]).draw();
+        //         });
+        //     } else {
+        //         console.error('Received data is not an array');
+        //     }
+        // });
 
         socket.on('update_data', function(data) {
     table.clear().draw();
     var total_purchase = 0; // Initialize total purchase
     if (Array.isArray(data)) {
         $.each(data, function(index, item) {
-            table.row.add([item.name, item.quantity, item.price, item.quantity_left]).draw();
-            total_purchase += item.quantity * item.price; // Multiply quantity by price and add to total
+            table.row.add([item.name, item.quantity, item.price, item.quantity_left, item.subtotal]).draw();
+            total_purchase += item.subtotal; // Multiply quantity by price and add to total
         });
         $('#total_purchase').text('Total Purchase: ' + total_purchase.toFixed(2)); // Update the total purchase on the page
     } else {

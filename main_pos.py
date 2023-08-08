@@ -1,6 +1,6 @@
 from textual.app import App
 from textual.screen import Screen
-from textual.widgets import Footer, Header, Input, DataTable, RichLog
+from textual.widgets import Footer, Header, Input, DataTable, RichLog, Static
 from textual.coordinate import Coordinate
 from textual.containers import Container, Horizontal, Vertical
 import conf
@@ -18,6 +18,7 @@ class Pos(Screen):
 
         self.inputs_container = Vertical(Horizontal(
             Input('', placeholder='Textile', id='textile', classes='inputs'), id='inputs'),
+            Static('', id='total', classes='inputs'),
             id='upper_cnt')
         self.tables_container = Vertical(
             self.textile_widget, RichLog(id='feedback', highlight=True, markup=True, wrap=True),
@@ -31,7 +32,7 @@ class Pos(Screen):
         yield self.footer_widget
 
     def on_mount(self):
-        PT_CLMN = [['ID', 7], ['Textile Name', 30], ['price', 20], ['quantity', 20], ['quantity left', 20]]
+        PT_CLMN = [['ID', 7], ['Textile Name', 30], ['price', 20], ['quantity', 20], ['quantity left', 20], ['subtotal', 20]]
         for c in PT_CLMN:
             self.textile_widget.add_column(f'{c[0]}', width=c[1])
         self.query_one('#textile').focus()
@@ -65,7 +66,7 @@ class Pos(Screen):
                     self.textile_widget.move_cursor(row=row)
                 else:
                     quantity_left = conf.calculate_quantity_left(textile.textile_id)
-                    self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.calculate_price(0), 0, quantity_left], key=str(id))
+                    self.textile_widget.add_row(*[textile.textile_id, textile.name, textile.calculate_price(0), 0, quantity_left, 0], key=str(id))
                     row = self.textile_widget.get_row_index(str(id))
                     self.textile_widget.move_cursor(row=row)
 
@@ -79,6 +80,10 @@ class Pos(Screen):
                 price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), price*new_value)
+                
+                total = sum(float(self.textile_widget.get_row(r)[5]) for r in self.textile_widget.rows)
+                self.query_one('#total').update(f'Total : {total} DA')
 
 
             elif event.value == 'confirm':
@@ -124,7 +129,8 @@ class Pos(Screen):
                         'name': data[1],
                         'price': data[2],
                         'quantity': data[3],
-                        'quantity_left': data[4]
+                        'quantity_left': data[4],
+                        'subtotal': data[5]
                     })
 
             self.query_one('#textile').value = ''
