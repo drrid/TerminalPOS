@@ -38,7 +38,7 @@ class Pos(Screen):
 
         try:
             self.sio = socketio.Client()
-            self.sio.connect('http://192.168.5.145:5555')
+            self.sio.connect('http://192.168.5.133:5555')
             self.sio.emit('clear')
         except socketio.exceptions.ConnectionError as e:
             self.log_error(f"Connection error: {e}")
@@ -92,6 +92,26 @@ class Pos(Screen):
                 transaction_id = conf.create_transaction_with_textiles(textiles_and_quantities)
 
                 self.print_receipt(transaction_id, rows)
+                self.clear_table()
+
+            elif event.value == 'clear':
+                self.clear_table()
+
+            elif event.value == 'deleteqnt':
+                current_row = self.textile_widget.cursor_row
+                quantity = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
+                # price = self.textile_widget.get_cell_at(Coordinate(row=current_row, column=3))
+                new_value = 0
+                price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
+
+            elif event.value == 'deleterow':
+                current_row = self.textile_widget.get_row_at(self.textile_widget.cursor_row)
+                id = str(current_row[0])
+                # self.textile_widget.get_row_index
+                self.textile_widget.remove_row(id)
+
 
             
             
@@ -115,6 +135,9 @@ class Pos(Screen):
             self.query_one('#textile').value = ''
             self.query_one('#textile').focus()
 
+
+    def clear_table(self):
+        self.textile_widget.clear()
 
     def print_receipt(self, transaction_id, rows):
         try:
