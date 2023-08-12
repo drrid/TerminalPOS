@@ -147,16 +147,26 @@ class Pos(Screen):
 
     def clear_table(self):
         self.textile_widget.clear()
+        self.query_one('#total').value = ''
 
     def print_receipt(self, transaction_id, rows):
         try:
             receipt = Network("192.168.5.79") #Printer IP Address
-            receipt.text(f"{transaction_id}\n")
+            receipt.text(f"ratamou Textile\n")
+            receipt.text(f"cite belle vue superieure\n")
+            receipt.text(f"Ain Mlila, Algerie\n")
+            receipt.text(f"www.ratamou.com\n")
+            receipt.text(f"0556203041\n")
+            receipt.text(f"  \n")
+            receipt.text(f"  \n")
             receipt.text(f"id -- Textile Name   --  Price --    Quantity\n")
+            receipt.text(f"  \n")
+
             for r in rows:
-                receipt.text(f"{r[0]}--{r[1]}--{r[2]}--{r[3]}\n")
-                receipt.text(f"    \n")
-            receipt.text(f'total : *** {conf.calculate_total_for_transaction(transaction_id)} ***')
+                receipt.text(f"{r[0]}-- {r[1]} -- {r[2]} -- {r[3]} \n")
+                # receipt.text(f"    \n")
+            receipt.text(f'total : *** {conf.calculate_total_for_transaction(transaction_id)} DA***\n')
+            receipt.text(f"  \n")
             receipt.barcode("{B" + f'{transaction_id}', "CODE128", function_type="B")
             receipt.cut()
         except Exception as e:
