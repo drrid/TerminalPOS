@@ -92,7 +92,8 @@
             table.row.add([item.name, item.quantity, item.price, item.quantity_left, item.subtotal]).draw();
             total_purchase += item.subtotal; // Multiply quantity by price and add to total
         });
-        $('#total_purchase').text('Total Purchase: ' + total_purchase.toFixed(2)); // Update the total purchase on the page
+        var rounded_purchase = total_purchase;
+        $('#total_purchase').text('Total Purchase: ' + rounded_purchase); // Update the total purchase on the page
     } else {
         console.error('Received data is not an array');
     }

@@ -7,6 +7,7 @@ import conf
 import datetime as dt
 from escpos.printer import Network
 import socketio
+from math import floor
 
 
 # Pos Screen --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -80,7 +81,7 @@ class Pos(Screen):
                 price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
-                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), price*new_value)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), floor(price*new_value / 10) * 10)
                 
                 total = sum(float(self.textile_widget.get_row(r)[5]) for r in self.textile_widget.rows)
                 self.query_one('#total').update(f'Total : {total} DA')
@@ -110,6 +111,8 @@ class Pos(Screen):
                 price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), floor(price*new_value / 10) * 10)
+
 
             elif event.value == 'deleterow':
                 current_row = self.textile_widget.get_row_at(self.textile_widget.cursor_row)
@@ -152,6 +155,8 @@ class Pos(Screen):
             receipt.text(f"id -- Textile Name   --  Price --    Quantity\n")
             for r in rows:
                 receipt.text(f"{r[0]}--{r[1]}--{r[2]}--{r[3]}\n")
+                receipt.text(f"    \n")
+            receipt.text(f'total : *** {conf.calculate_total_for_transaction(transaction_id)} ***')
             receipt.barcode("{B" + f'{transaction_id}', "CODE128", function_type="B")
             receipt.cut()
         except Exception as e:
