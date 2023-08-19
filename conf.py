@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, 
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from dotenv import load_dotenv
 import os
+from math import floor
 
 
 load_dotenv()
@@ -117,7 +118,7 @@ def create_transaction_with_textiles(textiles_and_quantities):
                     #     subtotal = quantity * textile.price * 0.9
                     # else:
                         # subtotal = quantity * textile.price
-                    subtotal = quantity * textile.calculate_price(quantity)
+                    subtotal = floor(quantity * textile.calculate_price(quantity) / 10) * 10
 
                     new_item = TransactionItem(transaction_id=new_transaction.transaction_id,
                                                textile_id=textile_id,
@@ -133,6 +134,21 @@ def create_transaction_with_textiles(textiles_and_quantities):
             print(f"Error creating transaction: {e}")
             return None
         
+def calculate_total_for_transaction(transaction_id):
+    """Calculate the total amount of transaction items for a given transaction id."""
+    with Session() as session:
+        try:
+            # Get all TransactionItems for the given transaction_id
+            transaction_items = session.query(TransactionItem).filter_by(transaction_id=transaction_id).all()
+
+            # Calculate the total amount
+            total = sum(item.subtotal for item in transaction_items)
+            
+            return total
+        except Exception as e:
+            print(f"Error calculating total for transaction: {e}")
+            return None
+
 
 def update_textile(textile_id, **kwargs):
     """Update the textile with the given ID using the provided keyword arguments."""

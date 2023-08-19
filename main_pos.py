@@ -7,6 +7,7 @@ import conf
 import datetime as dt
 from escpos.printer import Network
 import socketio
+from math import floor
 
 
 # Pos Screen --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -80,7 +81,7 @@ class Pos(Screen):
                 price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
-                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), price*new_value)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), floor(price*new_value / 10) * 10)
                 
                 total = sum(float(self.textile_widget.get_row(r)[5]) for r in self.textile_widget.rows)
                 self.query_one('#total').update(f'Total : {total} DA')
@@ -110,6 +111,8 @@ class Pos(Screen):
                 price = conf.select_textile_by_id(int(self.textile_widget.get_row_at(current_row)[0])).calculate_price(new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=3), new_value)
                 self.textile_widget.update_cell_at(Coordinate(row=current_row, column=2), price)
+                self.textile_widget.update_cell_at(Coordinate(row=current_row, column=5), floor(price*new_value / 10) * 10)
+
 
             elif event.value == 'deleterow':
                 current_row = self.textile_widget.get_row_at(self.textile_widget.cursor_row)
@@ -143,14 +146,26 @@ class Pos(Screen):
 
     def clear_table(self):
         self.textile_widget.clear()
+        self.query_one('#total').value = ''
 
     def print_receipt(self, transaction_id, rows):
         try:
             receipt = Network("192.168.5.79") #Printer IP Address
-            receipt.text(f"{transaction_id}\n")
+            receipt.text(f"ratamou Textile\n")
+            receipt.text(f"cite belle vue superieure\n")
+            receipt.text(f"Ain Mlila, Algerie\n")
+            receipt.text(f"www.ratamou.com\n")
+            receipt.text(f"0556203041\n")
+            receipt.text(f"  \n")
+            receipt.text(f"  \n")
             receipt.text(f"id -- Textile Name   --  Price --    Quantity\n")
+            receipt.text(f"  \n")
+
             for r in rows:
-                receipt.text(f"{r[0]}--{r[1]}--{r[2]}--{r[3]}\n")
+                receipt.text(f"{r[0]}-- {r[1]} -- {r[2]} -- {r[3]} \n")
+                # receipt.text(f"    \n")
+            receipt.text(f'total : *** {conf.calculate_total_for_transaction(transaction_id)} DA***\n')
+            receipt.text(f"  \n")
             receipt.barcode("{B" + f'{transaction_id}', "CODE128", function_type="B")
             receipt.cut()
         except Exception as e:
