@@ -31,6 +31,7 @@ class Textile(Base):
     price = Column(Float())
     notes = Column(String(200))
     added_time = Column(DateTime, default=func.now())
+    # stored_cost_per_meter = Column(Float())
 
     transactions = relationship('TransactionItem', back_populates='textile')
 
@@ -41,6 +42,9 @@ class Textile(Base):
             return self.price * 0.95
         else:
             return self.price
+        
+    # def compute_and_set_cost_per_meter(self):
+    #     self.stored_cost_per_meter = self.cost_per_meter
 
     @property
     def cost_per_meter(self):
@@ -176,6 +180,21 @@ def save_to_db(record):
         except Exception as e:
             session.rollback()
             print(e)
+
+# def save_to_db(record):
+#     """Save the given record to the database."""
+#     with Session() as session:
+#         try:
+#             # if isinstance(record, Textile):
+#             record.compute_and_set_cost_per_meter()
+
+#             session.add(record)
+#             session.commit()
+#             generated_id = record.textile_id
+#             return generated_id
+#         except Exception as e:
+#             session.rollback()
+#             print(e)
 
 
 def select_all_starts_with(**kwargs):
