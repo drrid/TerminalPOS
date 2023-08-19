@@ -66,8 +66,15 @@ class PosBunker(Screen):
 
     def on_input_changed(self, event: Input.Changed):
         try:
-            if event.input.id in ['name', 'notes-t']:
+            if event.input.id == 'notes-t':
                 pass
+            elif event.input.id == 'name':
+                inp = event.input.value
+                if inp.isdigit():
+                    textiles = conf.select_textile_by_id(int(inp))
+                    row_index = self.row_index_id.get(str(textiles.textile_id))
+                    self.textile_widget.move_cursor(row=row_index)
+
             else:
                 if self.is_float(event.input.value):
                         pass
@@ -194,6 +201,7 @@ class PosBunker(Screen):
             self.row_index_id = {}
             for index, textile in enumerate(textiles):
                 textile_id = textile[0]
+                # self.log_feedback(type(textile_id))
                 self.textile_widget.add_row(*textile, key=textile_id)
                 self.row_index_id.update({textile_id: index})
                 # self.log_feedback()

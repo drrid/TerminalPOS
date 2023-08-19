@@ -119,7 +119,6 @@ class Pos(Screen):
 
 
             
-            
             self.sio.emit('clear')
             for i, row in enumerate(self.textile_widget.rows):
                     data = self.textile_widget.get_row_at(i)

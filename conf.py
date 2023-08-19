@@ -66,7 +66,7 @@ class TransactionItem(Base):
     item_id = Column(Integer(), primary_key=True, autoincrement=True)
     transaction_id = Column(Integer(), ForeignKey('transactions.transaction_id'))
     textile_id = Column(Integer(), ForeignKey('textile.textile_id'))
-    quantity = Column(Integer())
+    quantity = Column(Float())
     subtotal = Column(Float())
 
     transaction = relationship('Transaction', back_populates='items')
