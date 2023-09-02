@@ -61,6 +61,7 @@ class Transaction(Base):
     __tablename__ = 'transactions'
     transaction_id = Column(Integer(), primary_key=True, autoincrement=True)
     transaction_date = Column(DateTime, default=func.now())
+    total = Column(Float())
     
     # Relationship to TransactionItem
     items = relationship('TransactionItem', back_populates='transaction')
@@ -104,32 +105,37 @@ def calculate_quantity_left(textile_id):
             print(e)
     
 
-
 def create_transaction_with_textiles(textiles_and_quantities):
     """Create a new transaction with multiple textiles and quantities."""
     with Session() as session:
         try:
             new_transaction = Transaction()
             session.add(new_transaction)
-            session.commit()
+            # session.commit()
+
+            total_amount = 0.0  # Variable to hold the total amount for the transaction
 
             for textile_id, quantity in textiles_and_quantities:
                 textile = session.query(Textile).filter_by(textile_id=textile_id).first()
                 if textile:
-                    # if quantity >= 3 and quantity < 5:
-                    #     subtotal = quantity * textile.price * 0.95
-                    # if quantity >= 5:
-                    #     subtotal = quantity * textile.price * 0.9
-                    # else:
-                        # subtotal = quantity * textile.price
                     subtotal = floor(quantity * textile.calculate_price(quantity) / 10) * 10
+                    total_amount += subtotal  # Add the subtotal to the total amount
 
                     new_item = TransactionItem(transaction_id=new_transaction.transaction_id,
                                                textile_id=textile_id,
                                                quantity=quantity,
                                                subtotal=subtotal)
                     session.add(new_item)
-                    # textile.quantity_left -= quantity
+                    
+            # Apply rounding rules to total_amount
+            if total_amount < 1040:
+                rounded_total = 1000
+            elif total_amount < 2050:
+                rounded_total = 2000
+            else:
+                rounded_total = total_amount  # Or any other rounding logic you might want to apply
+
+            new_transaction.total = rounded_total  # Update the transaction's total column
             
             session.commit()
             return new_transaction.transaction_id
@@ -137,6 +143,40 @@ def create_transaction_with_textiles(textiles_and_quantities):
             session.rollback()
             print(f"Error creating transaction: {e}")
             return None
+
+
+# def create_transaction_with_textiles(textiles_and_quantities):
+#     """Create a new transaction with multiple textiles and quantities."""
+#     with Session() as session:
+#         try:
+#             new_transaction = Transaction()
+#             session.add(new_transaction)
+#             session.commit()
+
+#             for textile_id, quantity in textiles_and_quantities:
+#                 textile = session.query(Textile).filter_by(textile_id=textile_id).first()
+#                 if textile:
+#                     # if quantity >= 3 and quantity < 5:
+#                     #     subtotal = quantity * textile.price * 0.95
+#                     # if quantity >= 5:
+#                     #     subtotal = quantity * textile.price * 0.9
+#                     # else:
+#                         # subtotal = quantity * textile.price
+#                     subtotal = floor(quantity * textile.calculate_price(quantity) / 10) * 10
+
+#                     new_item = TransactionItem(transaction_id=new_transaction.transaction_id,
+#                                                textile_id=textile_id,
+#                                                quantity=quantity,
+#                                                subtotal=subtotal)
+#                     session.add(new_item)
+#                     # textile.quantity_left -= quantity
+            
+#             session.commit()
+#             return new_transaction.transaction_id
+#         except Exception as e:
+#             session.rollback()
+#             print(f"Error creating transaction: {e}")
+#             return None
         
 def calculate_total_for_transaction(transaction_id):
     """Calculate the total amount of transaction items for a given transaction id."""
@@ -258,7 +298,7 @@ def select_textile_by_id(textile_id):
 
 init_db()
 
-
+# print(select_all_textiles())
 # textiles_and_quantities = [(3, 3), (4, 1)]
 # transaction_id = create_transaction_with_textiles(textiles_and_quantities)
 # print(calculate_quantity_left(4))
