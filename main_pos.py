@@ -164,7 +164,8 @@ class Pos(Screen):
             for r in rows:
                 receipt.text(f"{r[0]}-- {r[1]} -- {r[2]} -- {r[3]} \n")
                 # receipt.text(f"    \n")
-            receipt.text(f'total : *** {conf.calculate_total_for_transaction(transaction_id)} DA***\n')
+            # receipt.text(f'total : *** {conf.calculate_total_for_transaction(transaction_id)} DA***\n')
+            receipt.text(f'total : *** {conf.select_transaction_by_id(transaction_id).total} DA***\n')
             receipt.text(f"  \n")
             receipt.barcode("{B" + f'{transaction_id}', "CODE128", function_type="B")
             receipt.cut()

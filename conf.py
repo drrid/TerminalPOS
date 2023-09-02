@@ -105,13 +105,111 @@ def calculate_quantity_left(textile_id):
             print(e)
     
 
+# def round_total_amount(total_amount):
+#     rounding_rules = [
+#         {'threshold': x, 'limit': x + 40, 'round_to': 40} for x in range(1000, 4000, 500)
+#     ] + [
+#         {'threshold': x, 'limit': x + 50, 'round_to': 50} for x in range(2000, 4000, 500)
+#     ] + [
+#         {'threshold': x, 'limit': x + 100, 'round_to': 100} for x in range(4000, 7000, 500)
+#     ] + [
+#         {'threshold': x, 'limit': x + 200, 'round_to': 200} for x in range(7000, 10000, 500)
+#     ] + [
+#         {'threshold': x, 'limit': x + 300, 'round_to': 300} for x in range(10000, 15000, 500)
+#     ] + [
+#         {'threshold': x, 'limit': x + 500, 'round_to': 500} for x in range(15000, 50001, 1000)
+#     ]
+
+#     for rule in rounding_rules:
+#         if rule['threshold'] <= total_amount < rule['limit']:
+#             return rule['threshold']
+
+#     return total_amount
+
+
+def round_total_amount(total_amount):
+    # Initialize rounding thresholds and corresponding rounding values
+    rounding_rules = [
+        {'threshold': 1000, 'limit': 1040, 'round_to': 40},
+        {'threshold': 1500, 'limit': 1540, 'round_to': 40},
+        {'threshold': 2000, 'limit': 2050, 'round_to': 50},
+        {'threshold': 2500, 'limit': 2550, 'round_to': 50},
+        {'threshold': 3000, 'limit': 3050, 'round_to': 50},
+        {'threshold': 3500, 'limit': 3550, 'round_to': 50},
+        {'threshold': 4000, 'limit': 4100, 'round_to': 100},
+        {'threshold': 4500, 'limit': 4600, 'round_to': 100},
+        {'threshold': 5000, 'limit': 5100, 'round_to': 100},
+        {'threshold': 5500, 'limit': 5600, 'round_to': 100},
+        {'threshold': 6000, 'limit': 6100, 'round_to': 100},
+        {'threshold': 6500, 'limit': 6600, 'round_to': 100},
+        {'threshold': 7000, 'limit': 7200, 'round_to': 200},
+        {'threshold': 7500, 'limit': 7700, 'round_to': 200},
+        {'threshold': 8000, 'limit': 8200, 'round_to': 200},
+        {'threshold': 8500, 'limit': 8700, 'round_to': 200},
+        {'threshold': 9000, 'limit': 9200, 'round_to': 200},
+        {'threshold': 9500, 'limit': 9700, 'round_to': 200},
+        {'threshold': 10000, 'limit': 10300, 'round_to': 300},
+        {'threshold': 10500, 'limit': 10800, 'round_to': 300},
+        {'threshold': 11000, 'limit': 11300, 'round_to': 300},
+        {'threshold': 11500, 'limit': 11800, 'round_to': 300},
+        {'threshold': 12500, 'limit': 12800, 'round_to': 300},
+        {'threshold': 13000, 'limit': 13300, 'round_to': 300},
+        {'threshold': 13500, 'limit': 13800, 'round_to': 300},
+        {'threshold': 14000, 'limit': 14300, 'round_to': 300},
+        {'threshold': 14500, 'limit': 14800, 'round_to': 300},
+        {'threshold': 15000, 'limit': 15300, 'round_to': 300},
+        {'threshold': 15500, 'limit': 15800, 'round_to': 300},
+        {'threshold': 16000, 'limit': 16300, 'round_to': 300},
+        {'threshold': 16500, 'limit': 16800, 'round_to': 300},
+        {'threshold': 17000, 'limit': 17300, 'round_to': 300},
+        {'threshold': 17500, 'limit': 17800, 'round_to': 300},
+        {'threshold': 18000, 'limit': 18300, 'round_to': 300},
+        {'threshold': 18500, 'limit': 18800, 'round_to': 300},
+        {'threshold': 19000, 'limit': 19300, 'round_to': 300},
+        {'threshold': 19500, 'limit': 19800, 'round_to': 300},
+        {'threshold': 20000, 'limit': 20300, 'round_to': 300},
+        {'threshold': 20500, 'limit': 20800, 'round_to': 300},
+        {'threshold': 21000, 'limit': 21300, 'round_to': 300},
+        {'threshold': 21500, 'limit': 21800, 'round_to': 300},
+        {'threshold': 22000, 'limit': 22300, 'round_to': 300},
+        {'threshold': 22500, 'limit': 22800, 'round_to': 300},
+        {'threshold': 23000, 'limit': 23300, 'round_to': 300},
+        {'threshold': 23500, 'limit': 23800, 'round_to': 300},
+        {'threshold': 24000, 'limit': 24300, 'round_to': 300},
+        {'threshold': 24500, 'limit': 24800, 'round_to': 300},
+        {'threshold': 25000, 'limit': 25300, 'round_to': 300},
+        {'threshold': 25500, 'limit': 25800, 'round_to': 300},
+        {'threshold': 26000, 'limit': 26300, 'round_to': 300},
+        {'threshold': 26500, 'limit': 26800, 'round_to': 300},
+        {'threshold': 27000, 'limit': 27300, 'round_to': 300},
+        {'threshold': 27500, 'limit': 27800, 'round_to': 300},
+        {'threshold': 28000, 'limit': 28300, 'round_to': 300},
+        {'threshold': 28500, 'limit': 28800, 'round_to': 300},
+        {'threshold': 29000, 'limit': 29300, 'round_to': 300},
+        {'threshold': 29500, 'limit': 29800, 'round_to': 300},
+        {'threshold': 30000, 'limit': 30300, 'round_to': 300},
+        {'threshold': 30500, 'limit': 30800, 'round_to': 300},
+        {'threshold': 31000, 'limit': 31300, 'round_to': 300},
+        {'threshold': 31500, 'limit': 31800, 'round_to': 300},
+        {'threshold': 32000, 'limit': 32300, 'round_to': 300},
+        {'threshold': 32500, 'limit': 32800, 'round_to': 300},
+        {'threshold': 33000, 'limit': 33300, 'round_to': 300},
+        {'threshold': 33500, 'limit': 33800, 'round_to': 300},
+        {'threshold': 34000, 'limit': 34300, 'round_to': 300}
+    ]
+
+    for rule in rounding_rules:
+        if rule['threshold'] <= total_amount < rule['limit']:
+            return rule['threshold']
+
+    return total_amount
+
 def create_transaction_with_textiles(textiles_and_quantities):
     """Create a new transaction with multiple textiles and quantities."""
     with Session() as session:
         try:
             new_transaction = Transaction()
             session.add(new_transaction)
-            # session.commit()
 
             total_amount = 0.0  # Variable to hold the total amount for the transaction
 
@@ -126,14 +224,9 @@ def create_transaction_with_textiles(textiles_and_quantities):
                                                quantity=quantity,
                                                subtotal=subtotal)
                     session.add(new_item)
-                    
+
             # Apply rounding rules to total_amount
-            if total_amount < 1040:
-                rounded_total = 1000
-            elif total_amount < 2050:
-                rounded_total = 2000
-            else:
-                rounded_total = total_amount  # Or any other rounding logic you might want to apply
+            rounded_total = round_total_amount(total_amount)
 
             new_transaction.total = rounded_total  # Update the transaction's total column
             
@@ -284,6 +377,17 @@ def select_textile_by_id(textile_id):
         except Exception as e:
             print(f"Error selecting textile by details: {e}")
             return None
+        
+
+def select_transaction_by_id(transaction_id):
+    with Session() as session:
+        try:
+            transaction = session.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+            return transaction
+        except Exception as e:
+            print(f"Error selecting transaction by details: {e}")
+            return None
+
 
 # def select_textile_by_id(textile_id):
 #     with Session() as session:
@@ -298,6 +402,8 @@ def select_textile_by_id(textile_id):
 
 init_db()
 
+
+print(round_total_amount(33530))
 # print(select_all_textiles())
 # textiles_and_quantities = [(3, 3), (4, 1)]
 # transaction_id = create_transaction_with_textiles(textiles_and_quantities)
